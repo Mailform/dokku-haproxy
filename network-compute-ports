@@ -9,14 +9,6 @@ haproxy_network_compute_ports() {
   declare desc="update port map after docker container build"
   local trigger="haproxy_pre_deploy"
   local APP="$1" PROC_TYPE="$2"
-
-  if [[ "$(plugn trigger proxy-type "$APP")" == "haproxy" ]]; then
-      #network_compute_ports_for_dockerfile "$APP" "$PROC_TYPE"
-      dokku_log_warn "HAPROXY ADD UNIMPLEMENTED"
-  else
-    # TODO: remove tcp ports from dockerfile
-    dokku_log_warn "HAPROXY REMOVE UNIMPLEMENTED"
-  fi
 }
 
 haproxy_network_compute_ports "$@"
