@@ -10,7 +10,6 @@ haproxy_post_deploy() {
   local trigger="haproxy_post_deploy"
   local APP="$1" 
 
-  dokku_log_warn "POST DEPLOY: X"
   if [[ "$(plugn trigger proxy-type "$APP")" == "haproxy" ]]; then
       haproxy_configure_post_deploy "$APP"
   else
