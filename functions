@@ -29,6 +29,7 @@ haproxy_configure_container_port_mappings() {
   local HAPROXY_CONFIG_PATH="$DOKKU_ROOT/$APP/HAPROXY_RUNTIME_CONFIG"
   if [[ "$CONTAINER_INDEX" == "1" ]] ; then
       echo "# HAPROXY Runtime Configuration" > "$HAPROXY_CONFIG_PATH"
+      dokku_log_warn "HAPROXY CONFIG SETUP"
   fi
 
   dokku_log_warn "HAPROXY Configuration Path: [$HAPROXY_CONFIG_PATH] [$DOKKU_ROOT] [$APP]"
