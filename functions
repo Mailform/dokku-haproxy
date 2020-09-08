@@ -17,23 +17,34 @@ add_tcp_ports_from_dockerfile() {
   local passed_phases=(deploy)  
   if [[ "web" == "$PROC_TYPE" ]] ; then
       local RAW_TCP_PORTS="$(get_app_raw_tcp_ports "$APP")"
+
+      local PROXY_PORT_MAP=$(config_get "$APP" DOKKU_PROXY_PORT_MAP)
+      local PROXY_PORT_MAP=$(echo "$PROXY_PORT_MAP" | xargs) # trailing spaces mess up default template
+      
+      local DOKKU_APP_LISTENERS="$(plugn trigger network-get-listeners "$APP" "$PROC_TYPE" | xargs)"
+      
+      # wipe it
+      dokku_log_warn "LISTENERS: $DOKKU_APP_LISTENERS"
       
       if [[ -n "$RAW_TCP_PORTS" ]]; then
           local RAW_TCP_PORT
-
-          local PROXY_PORT_MAP=$(config_get "$APP" DOKKU_PROXY_PORT_MAP)
-          local PROXY_PORT_MAP=$(echo "$PROXY_PORT_MAP" | xargs) # trailing spaces mess up default template
-
-          local DOKKU_APP_LISTENERS="$(plugn trigger network-get-listeners "$APP" "$PROC_TYPE" | xargs)"
-
-          # wipe it
-          dokku_log_warn "LISTENERS: $DOKKU_APP_LISTENERS"
-          
-          dokku_log_info1 "Adding port $RAW_TCP_PORT based on EXPOSED in Dockerfile"
-          local AVAILABLE_TCP_PORT=$(get_available_port)
-          
-          dokku_log_warn "--->LINKING $AVAILABLE_TCP_PORT to $RAW_TCP_PORT"
-          #add_passed_docker_option passed_phases[@] "-p $AVAILABLE_TCP_PORT:$RAW_TCP_PORT/tcp"
+          for RAW_TCP_PORT in $RAW_TCP_PORTS; do
+              local ADD_TO_PROXY_PORTS=true
+              for PORT_MAP in $PROXY_PORT_MAP; do
+                  local APP_PORT="$(cut -d ':' -f3 <<<"$PORT_MAP")"
+                  if [[ "$APP_PORT" == "$RAW_TCP_PORT" ]]; then
+                      local ADD_TO_PROXY_PORTS=false
+                  fi
+              done
+              
+              if [ "$ADD_TO_PROXY_PORTS" = true ]; then
+                  dokku_log_warn "Adding port $RAW_TCP_PORT based on EXPOSED in Dockerfile"
+                  local AVAILABLE_TCP_PORT=$(get_available_port)
+                  dokku_log_warn "--->LINKING $AVAILABLE_TCP_PORT to $RAW_TCP_PORT"                  
+                  # local PROXY_PORT_MAP+="tcp:${AVAILABLE_TCP_PORT}:${RAW_TCP_PORT} "
+                  #add_passed_docker_option passed_phases[@] "-p $AVAILABLE_TCP_PORT:$RAW_TCP_PORT/tcp"
+              fi
+          done
       fi
   else
       # TODO: handle non-web
