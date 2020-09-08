@@ -35,7 +35,8 @@ add_tcp_ports_from_dockerfile() {
                   local APP_PORT="$(cut -d ':' -f3 <<<"$PORT_MAP")"
                   if [[ "$APP_PORT" == "$RAW_TCP_PORT" ]]; then
                       local ADD_TO_PROXY_PORTS=false
-                      dokku_log_warn "Maintaining $RAW_TCP_PORT mapping to $APP_PORT"
+                      local MAPPED_PORT="$(cut -d ':' -f2 <<<"$PORT_MAP")"
+                      dokku_log_warn "Maintaining $RAW_TCP_PORT mapping to $MAPPED_PORT"
                   fi
               done
               
