@@ -85,6 +85,7 @@ haproxy_retrieve_container_port() {
       fi
   fi
 
+  dokku_log_info1 "Container #$CONTAINER_INDEX is using Port $CONTAINER_PORT"
   echo $CONTAINER_PORT
 }
 
