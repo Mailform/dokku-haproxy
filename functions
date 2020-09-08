@@ -69,6 +69,24 @@ haproxy_configure_container_ipaddr() {
   local APP="$1"
 }
 
+haproxy_retrieve_container_port() {
+  declare desc="retrieve port for a specific container"
+  local trigger="network-get-port"
+  local APP="$1" PROC_TYPE="$2" CONTAINER_INDEX="$3"
+  local RAW_TCP_PORT=""
+  if [[ "web" == "$PROC_TYPE" ]] ; then
+      local RAW_TCP_PORTS="$(get_app_raw_tcp_ports "$APP")"
+      
+      if [[ -n "$RAW_TCP_PORTS" ]]; then
+          for RAW_TCP_PORT in $RAW_TCP_PORTS; do
+              
+          done          
+      fi
+  fi
+
+  echo $RAW_TCP_PORT
+}
+
 haproxy_configure_post_deploy() {
   declare desc="notify HAPROXY"
   local trigger="post-deploy"
