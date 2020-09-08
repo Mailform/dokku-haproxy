@@ -97,6 +97,8 @@ network_compute_ports_for_dockerfile() {
               local AVAILABLE_TCP_PORT=$(get_permitted_port)
               dokku_log_warn "--->LINKING $AVAILABLE_TCP_PORT to $RAW_TCP_PORT"
               NEW_PROXY_PORT_MAP+="-p $AVAILABLE_TCP_PORT:$RAW_TCP_PORT/tcp "
+
+              # TODO: notify HAPROXY of the new mapping if $RAW_TCP_PORT = 80
           done          
       fi
   else
