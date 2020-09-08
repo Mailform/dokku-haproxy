@@ -32,8 +32,6 @@ haproxy_configure_container_port_mappings() {
           echo "# HAPROXY Runtime Configuration" > "$HAPROXY_CONFIG_PATH"
       fi
       
-      dokku_log_warn "HAPROXY Configuration Path: [$HAPROXY_CONFIG_PATH] [$DOKKU_ROOT] [$APP]"
-      
       local LOCAL_IP="$(hostname --ip-address)"
       
       local NEW_PROXY_PORT_MAP
@@ -43,8 +41,8 @@ haproxy_configure_container_port_mappings() {
       local DOKKU_APP_LISTENERS="$(plugn trigger network-get-listeners "$APP" "$PROC_TYPE" | xargs)"
       
       # wipe it
-      dokku_log_warn "LISTENERS: $DOKKU_APP_LISTENERS"
-      dokku_log_warn "RAW PORTS: $RAW_TCP_PORTS"
+      #dokku_log_warn "LISTENERS: $DOKKU_APP_LISTENERS"
+      #dokku_log_warn "RAW PORTS: $RAW_TCP_PORTS"
       
       if [[ -n "$RAW_TCP_PORTS" ]]; then
           local RAW_TCP_PORT
@@ -58,7 +56,7 @@ haproxy_configure_container_port_mappings() {
 
               DOKKU_QUIET_OUTPUT=1 config_set --no-restart "$APP" "DOKKU_WEB_CONTAINER_PORT_$CONTAINER_INDEX"="$RAW_TCP_PORT"
               
-              dokku_log_warn "Container #${CONTAINER_INDEX}: linking $AVAILABLE_TCP_PORT to $RAW_TCP_PORT"
+              dokku_log_info1 "Container #${CONTAINER_INDEX}: linking $AVAILABLE_TCP_PORT to $RAW_TCP_PORT"
               # DOKKU_QUIET_OUTPUT=1 config_set --no-restart "$APP" "DOKKU_WEB_CONTAINER_PORT_$CONTAINER_INDEX"="$AVAILABLE_TCP_PORT"
           done          
       fi
