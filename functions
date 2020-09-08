@@ -72,13 +72,18 @@ haproxy_retrieve_container_port() {
   local trigger="network-get-port"
   local APP="$1" PROC_TYPE="$2" CONTAINER_INDEX="$3"
   local CONTAINER_PORT=""
+  dokku_log_warn "X1"
+  dokku_log_warn "XXXXXX $APP $PROC_TYPE $CONTAINER_INDEX"
   if [[ "web" == "$PROC_TYPE" ]] ; then
       local RAW_TCP_PORTS="$(get_app_raw_tcp_ports "$APP")"
-      
+
+      dokku_log_warn "X2 $RAW_TCP_PORTS"
       if [[ -n "$RAW_TCP_PORTS" ]]; then
           local RAW_TCP_PORT
+          dokku_log_warn "X3"
           for RAW_TCP_PORT in $RAW_TCP_PORTS; do
               CONTAINER_PORT=$RAW_TCP_PORT
+              dokku_log_warn "X4 $RAW_TCP_PORT $CONTAINER_PORT"
           done          
       fi
   fi
