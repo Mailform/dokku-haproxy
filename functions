@@ -55,6 +55,7 @@ haproxy_configure_container_port_mappings() {
               echo "set server ${APP}-backend/${APP}-server-${CONTAINER_INDEX} state ready" >> "$HAPROXY_CONFIG_PATH"
                             
               dokku_log_warn "Container #${CONTAINER_INDEX}: linking $AVAILABLE_TCP_PORT to $RAW_TCP_PORT"
+              DOKKU_QUIET_OUTPUT=1 config_set --no-restart "$APP" "DOKKU_WEB_CONTAINER_PORT_$CONTAINER_INDEX"="$AVAILABLE_TCP_PORT"
           done          
       fi
   fi
@@ -72,20 +73,9 @@ haproxy_retrieve_container_port() {
   local trigger="network-get-port"
   local APP="$1" PROC_TYPE="$2" CONTAINER_INDEX="$3"
   local CONTAINER_PORT=""
-  dokku_log_warn "X1"
-  dokku_log_warn "XXXXXX $APP $PROC_TYPE $CONTAINER_INDEX"
-  if [[ "web" == "$PROC_TYPE" ]] ; then
-      local RAW_TCP_PORTS="$(get_app_raw_tcp_ports "$APP")"
 
-      dokku_log_warn "X2 $RAW_TCP_PORTS"
-      if [[ -n "$RAW_TCP_PORTS" ]]; then
-          local RAW_TCP_PORT
-          dokku_log_warn "X3"
-          for RAW_TCP_PORT in $RAW_TCP_PORTS; do
-              CONTAINER_PORT=$RAW_TCP_PORT
-              dokku_log_warn "X4 $RAW_TCP_PORT $CONTAINER_PORT"
-          done          
-      fi
+  if [[ "web" == "$PROC_TYPE" ]] ; then
+      $CONTAINER_PORT=$(config_get "$APP" "DOKKU_WEB_CONTAINER_PORT_$CONTAINER_INDEX")
   fi
 
   dokku_log_info1 "Container #$CONTAINER_INDEX is using Port $CONTAINER_PORT"

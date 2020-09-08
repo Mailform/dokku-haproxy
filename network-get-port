@@ -11,7 +11,6 @@ haproxy_network_get_port() {
   local APP="$1" PROC_TYPE="$2" CINDEX="$3" HEROKUISH="$4"
   local TRIGGERTYPE="$(plugn trigger proxy-type "$APP")"
 
-  dokku_log_warn "Container $APP $PROC_TYPE $CINDEX $HEROKUISH $TRIGGERTYPE"
   if [[ "$(plugn trigger proxy-type "$APP")" == "haproxy" ]]; then
       haproxy_retrieve_container_port "$APP" "$PROC_TYPE" "$CINDEX" "$HEROKUISH"
   fi
