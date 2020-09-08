@@ -11,7 +11,7 @@ haproxy_network_compute_ports() {
   local APP="$1" PROC_TYPE="$2"
 
   if [[ "$(plugn trigger proxy-type "$APP")" == "haproxy" ]]; then
-    network_compute_ports "$APP" "$PROC_TYPE"
+    network_compute_ports_for_dockerfile "$APP" "$PROC_TYPE"
   else
     # TODO: remove tcp ports from dockerfile
     dokku_log_warn "HAPROXY REMOVE UNIMPLEMENTED"
