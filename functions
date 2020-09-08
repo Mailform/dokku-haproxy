@@ -53,8 +53,8 @@ haproxy_configure_container_port_mappings() {
               echo "set server ${APP}-backend/${APP}-server-${CONTAINER_INDEX} addr ${LOCAL_IP} port ${AVAILABLE_TCP_PORT}" >> "$HAPROXY_CONFIG_PATH"
               echo "set server ${APP}-backend/${APP}-server-${CONTAINER_INDEX} state ready" >> "$HAPROXY_CONFIG_PATH"
 
-              dokku_log_info1 "set server ${APP}-backend/${APP}-server-${CONTAINER_INDEX} addr ${LOCAL_IP} port ${AVAILABLE_TCP_PORT}" >> "$HAPROXY_CONFIG_PATH"
-              dokku_log_info1 "set server ${APP}-backend/${APP}-server-${CONTAINER_INDEX} state ready" >> "$HAPROXY_CONFIG_PATH"
+              dokku_log_warn "set server ${APP}-backend/${APP}-server-${CONTAINER_INDEX} addr ${LOCAL_IP} port ${AVAILABLE_TCP_PORT}"
+              dokku_log_warn "set server ${APP}-backend/${APP}-server-${CONTAINER_INDEX} state ready"
 
               DOKKU_QUIET_OUTPUT=1 config_set --no-restart "$APP" "DOKKU_WEB_CONTAINER_PORT_$CONTAINER_INDEX"="$RAW_TCP_PORT"
               
