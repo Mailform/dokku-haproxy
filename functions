@@ -78,8 +78,7 @@ haproxy_configure_post_deploy() {
   local HAPROXY_CONFIG_CONTENT="$(cat $HAPROXY_CONFIG_PATH)"
   local HAPROXY_ADMIN_URL=$(config_get "$APP" DOKKU_HAPROXY_ADMIN_URL)
 
-  dokku_log_info1 "Updating application routing"
-  dokku_log_info1 "$APP => $HAPROXY_CONFIG_CONTENT"
-  dokku_log_info1 $(curl -vvv -m 5 "$HAPROXY_ADMIN_URL" -X POST -H "Content-Type: application/x-www-form-urlencoded" -d "APP=$APP" -d "CONFIG=$HAPROXY_CONFIG_CONTENT")
+  dokku_log_info1 "Updating application routing at $HAPROXY_ADMIN_URL"
+  dokku_log_info1 $(curl -q -m 5 "$HAPROXY_ADMIN_URL" -H "Content-Type: application/x-www-form-urlencoded" -d "APP=$APP" -d "CONFIG=$HAPROXY_CONFIG_CONTENT")
 }
 
