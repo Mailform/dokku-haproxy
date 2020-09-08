@@ -44,7 +44,7 @@ add_tcp_ports_from_dockerfile() {
         local AVAILABLE_TCP_PORT=$(get_available_port)
 
         dokku_log_warn "--->LINKING $AVAILABLE_TCP_PORT to $RAW_TCP_PORT"
-        add_passed_docker_option passed_phases[@] "-p $AVAILABLE_TCP_PORT:RAW_TCP_PORT/tcp"
+        add_passed_docker_option passed_phases[@] "-p $AVAILABLE_TCP_PORT:$RAW_TCP_PORT/tcp"
       fi
     done
   fi
