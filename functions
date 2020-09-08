@@ -5,6 +5,19 @@ set -eo pipefail
 source "$PLUGIN_CORE_AVAILABLE_PATH/common/functions"
 source "$PLUGIN_CORE_AVAILABLE_PATH/docker-options/functions"
 
+get_permitted_port() {
+  declare desc="returns first currently unused port > 1024"
+  while true; do
+    local port=$(shuf -i 8010-12000 -n 1)
+    if ! nc -z 0.0.0.0 "$port"; then
+      echo "$port"
+      return 0
+    else
+      continue
+    fi
+  done
+}
+
 add_tcp_ports_from_dockerfile() {
   declare desc="build haproxy config to proxy app containers"
   local trigger="haproxy_pre_release_dockerfile"
@@ -18,6 +31,7 @@ add_tcp_ports_from_dockerfile() {
   if [[ "web" == "$PROC_TYPE" ]] ; then
       local RAW_TCP_PORTS="$(get_app_raw_tcp_ports "$APP")"
 
+      local NEW_PROXY_PORT_MAP
       local PROXY_PORT_MAP=$(config_get "$APP" DOKKU_PROXY_PORT_MAP)
       local PROXY_PORT_MAP=$(echo "$PROXY_PORT_MAP" | xargs) # trailing spaces mess up default template
       
@@ -32,21 +46,26 @@ add_tcp_ports_from_dockerfile() {
           local RAW_TCP_PORT
           for RAW_TCP_PORT in $RAW_TCP_PORTS; do
               local ADD_TO_PROXY_PORTS=true
-              for PORT_MAP in $PROXY_PORT_MAP; do
-                  local APP_PORT="$(cut -d ':' -f3 <<<"$PORT_MAP")"
-                  if [[ "$APP_PORT" == "$RAW_TCP_PORT" ]]; then
-                      local ADD_TO_PROXY_PORTS=false
-                      local MAPPED_PORT="$(cut -d ':' -f2 <<<"$PORT_MAP")"
-                      dokku_log_warn "Maintaining $RAW_TCP_PORT mapping to $MAPPED_PORT"
-                  fi
-              done
+              # REMAP ALL
+              #
+              #for PORT_MAP in $PROXY_PORT_MAP; do
+              #    local APP_PORT="$(cut -d ':' -f3 <<<"$PORT_MAP")"
+              #    if [[ "$APP_PORT" == "$RAW_TCP_PORT" ]]; then
+              #        local ADD_TO_PROXY_PORTS=false
+              #        local MAPPED_PORT="$(cut -d ':' -f2 <<<"$PORT_MAP")"
+              #        dokku_log_warn "Maintaining $RAW_TCP_PORT mapping to $MAPPED_PORT"
+              #    fi
+              #done
               
               if [ "$ADD_TO_PROXY_PORTS" = true ]; then
                   dokku_log_warn "Adding port $RAW_TCP_PORT based on EXPOSED in Dockerfile"
-                  local AVAILABLE_TCP_PORT=$(get_available_port)
+                  local AVAILABLE_TCP_PORT=$(get_permitted_port)
                   dokku_log_warn "--->LINKING $AVAILABLE_TCP_PORT to $RAW_TCP_PORT"                  
-                  # local PROXY_PORT_MAP+="tcp:${AVAILABLE_TCP_PORT}:${RAW_TCP_PORT} "
-                  #add_passed_docker_option passed_phases[@] "-p $AVAILABLE_TCP_PORT:$RAW_TCP_PORT/tcp"
+                  #local PROXY_PORT_MAP+="tcp:${AVAILABLE_TCP_PORT}:${RAW_TCP_PORT} "
+                  DOKKU_QUIET_OUTPUT=1 config_set --no-restart "$APP" DOKKU_PROXY_PORT_MAP="$NEW_PROXY_PORT_MAP"
+                            
+                  local NEW_PROXY_PORT_MAP+="-p ${AVAILABLE_TCP_PORT}:${RAW_TCP_PORT} "
+                  add_passed_docker_option passed_phases[@] "-p $AVAILABLE_TCP_PORT:$RAW_TCP_PORT/tcp"
               fi
           done
       fi
