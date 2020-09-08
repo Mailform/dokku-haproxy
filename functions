@@ -52,7 +52,7 @@ haproxy_configure_container_port_mappings() {
               NEW_PROXY_PORT_MAP+="-p $AVAILABLE_TCP_PORT:$RAW_TCP_PORT/tcp "
 
               # Update the HAPROXY_CONFIG_PATH
-              echo "set server ${APP}-server-${CONTAINER_INDEX} address {LOCAL_IP}:{AVAILABLE_TCP_PORT}" >> "$HAPROXY_CONFIG_PATH"
+              echo "set server ${APP}-server-${CONTAINER_INDEX} address ${LOCAL_IP}:${AVAILABLE_TCP_PORT}" >> "$HAPROXY_CONFIG_PATH"
               echo "set server ${APP}-server-${CONTAINER_INDEX} state ready" >> "$HAPROXY_CONFIG_PATH"
           done          
       fi
