@@ -68,20 +68,6 @@ haproxy_configure_container_ipaddr() {
   local APP="$1"
 }
 
-haproxy_retrieve_container_port() {
-  declare desc="retrieve port for a specific container"
-  local trigger="network-get-port"
-  local APP="$1" PROC_TYPE="$2" CONTAINER_INDEX="$3"
-  local CONTAINER_PORT=""
-
-  if [[ "web" == "$PROC_TYPE" ]] ; then
-      CONTAINER_PORT=$(config_get "$APP" "DOKKU_WEB_CONTAINER_PORT_$CONTAINER_INDEX")
-  fi
-
-  dokku_log_info1 "Container #$CONTAINER_INDEX is using Port $CONTAINER_PORT"
-  echo $CONTAINER_PORT
-}
-
 haproxy_configure_post_deploy() {
   declare desc="notify HAPROXY"
   local trigger="post-deploy"
@@ -93,5 +79,20 @@ haproxy_configure_post_deploy() {
 
   dokku_log_info1 "Updating application routing at $HAPROXY_ADMIN_URL"
   dokku_log_info1 $(curl -q -m 5 "$HAPROXY_ADMIN_URL" -H "Content-Type: application/x-www-form-urlencoded" -d "APP=$APP" -d "CONFIG=$HAPROXY_CONFIG_CONTENT")
+}
+
+haproxy_retrieve_container_port() {
+  declare desc="retrieve port for a specific container"
+  local trigger="network-get-port"
+  local APP="$1" PROC_TYPE="$2" CONTAINER_INDEX="$3"
+  local CONTAINER_PORT=""
+
+  if [[ "web" == "$PROC_TYPE" ]] ; then
+      # CONTAINER_PORT=$(config_get "$APP" "DOKKU_WEB_CONTAINER_PORT_$CONTAINER_INDEX")
+      CONTAINER_PORT=$(config_get "$APP" DOKKU_WEB_CONTAINER_PORT)
+  fi
+  
+  dokku_log_info1 "Container #$CONTAINER_INDEX is using Port $CONTAINER_PORT"
+  echo $CONTAINER_PORT
 }
 
