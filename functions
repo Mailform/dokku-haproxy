@@ -52,8 +52,8 @@ haproxy_configure_container_port_mappings() {
               NEW_PROXY_PORT_MAP+="-p $AVAILABLE_TCP_PORT:$RAW_TCP_PORT/tcp "
 
               # Update the HAPROXY_CONFIG_PATH
-              echo "set server ${APP}-server-${CONTAINER_INDEX} address ${LOCAL_IP}:${AVAILABLE_TCP_PORT}" >> "$HAPROXY_CONFIG_PATH"
-              echo "set server ${APP}-server-${CONTAINER_INDEX} state ready" >> "$HAPROXY_CONFIG_PATH"
+              echo "set server ${APP}-backend/${APP}-server-${CONTAINER_INDEX} addr ${LOCAL_IP} port ${AVAILABLE_TCP_PORT}" >> "$HAPROXY_CONFIG_PATH"
+              echo "set server ${APP}-backend/${APP}-server-${CONTAINER_INDEX} state ready" >> "$HAPROXY_CONFIG_PATH"
           done          
       fi
   else
@@ -73,5 +73,13 @@ haproxy_configure_post_deploy() {
   declare desc="notify HAPROXY"
   local trigger="post-deploy"
   local APP="$1"
+
+  local HAPROXY_CONFIG_PATH="$DOKKU_ROOT/$APP/HAPROXY_RUNTIME_CONFIG"
+  echo "show servers state" > "$HAPROXY_CONFIG_PATH"
+  local HAPROXY_CONFIG_CONTENT="$(cat $HAPROXY_CONFIG_PATH)"
+  local HAPROXY_ADMIN_URL=$(config_get "$APP" "$DOKKU_HAPROXY_ADMIN_URL")
+
+  dokku_log_warn "POST DEPLOY: $HAPROXY_ADMIN_URL $HAPROXY_CONFIG_CONTENT"
+  # curl -v -X POST 10.128.0.40:10000/control/v1/app/update -H "Content-Type: application/x-www-form-urlencoded" -d "APP=v1-web" -d "contents=$(cat nc)"
 }
 
