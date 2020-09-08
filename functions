@@ -3,15 +3,19 @@ set -eo pipefail
 [[ $DOKKU_TRACE ]] && set -x
 
 source "$PLUGIN_CORE_AVAILABLE_PATH/common/functions"
+source "$PLUGIN_CORE_AVAILABLE_PATH/docker-options/functions"
 
 add_tcp_ports_from_dockerfile() {
   declare desc="build haproxy config to proxy app containers"
   local trigger="haproxy_pre_release_dockerfile"
   local APP="$1"
 
+  local passed_phases=(deploy)
+  
   local RAW_TCP_PORTS="$(get_app_raw_tcp_ports "$APP")"
   local PROXY_PORT_MAP="$(get_app_proxy_port_map "$APP")"
-
+  local PASSED=$(display_passed_phases_options $passed_phases)
+  
   local DOKKU_APP_LISTENERS="$(plugn trigger network-get-listeners "$APP" | xargs)"
   local PROXY_PORT_MAP2=$(config_get "$APP" DOKKU_PROXY_PORT_MAP)
   local PROXY_PORT_MAP3=$(echo "$PROXY_PORT_MAP" | xargs) # trailing spaces mess up default template
@@ -21,7 +25,8 @@ add_tcp_ports_from_dockerfile() {
   dokku_log_warn "PORT MAP 2: $PROXY_PORT_MAP2"
   dokku_log_warn "PORT MAP 3: $PROXY_PORT_MAP3"
   dokku_log_warn "LISTENERS: $DOKKU_APP_LISTENERS"
-
+  dokku_log_warn "PASSED: $PASSED"
+      
   if [[ -n "$RAW_TCP_PORTS" ]]; then
     local RAW_TCP_PORT
     for RAW_TCP_PORT in $RAW_TCP_PORTS; do
@@ -39,37 +44,8 @@ add_tcp_ports_from_dockerfile() {
         local AVAILABLE_TCP_PORT=$(get_available_port)
 
         dokku_log_warn "--->LINKING $AVAILABLE_TCP_PORT to $RAW_TCP_PORT"
-        local PROXY_PORT_MAP+="tcp:${AVAILABLE_TCP_PORT}:${RAW_TCP_PORT} "
+        add_passed_docker_option passed_phases[@] "-p $AVAILABLE_TCP_PORT:RAW_TCP_PORT/tcp"
       fi
     done
-    DOKKU_QUIET_OUTPUT=1 config_set --no-restart "$APP" DOKKU_PROXY_PORT_MAP="$PROXY_PORT_MAP"
   fi
-}
-
-haproxy_build_config() {
-  declare desc="build haproxy config to proxy app containers using sigil"
-  local APP="$1"
-  verify_app_name "$APP"
-  local HAPROXY_TEMPLATE_NAME="haproxy.conf.sigil"
-  local DEFAULT_HAPROXY_TEMPLATE="$PLUGIN_AVAILABLE_PATH/haproxy/templates/$HAPROXY_TEMPLATE_NAME"
-  local HAPROXY_TEMPLATE="$DEFAULT_HAPROXY_TEMPLATE"
-  local DOKKU_APP_LISTENERS="$(plugn trigger network-get-listeners "$APP" | xargs)"
-  local PROXY_PORT_MAP=$(config_get "$APP" DOKKU_PROXY_PORT_MAP)
-  local PROXY_PORT_MAP=$(echo "$PROXY_PORT_MAP" | xargs) # trailing spaces mess up default template
-  local DOKKU_APP_LISTENERS="$(plugn trigger network-get-listeners "$APP" | xargs)"
-  local HAPROXY_BUILD_CONFIG_TMP_WORK_DIR=$(mktemp -d "/tmp/dokku-${FUNCNAME[0]}.XXXX")
-  local HAPROXY_CONF=$(mktemp --tmpdir="${HAPROXY_BUILD_CONFIG_TMP_WORK_DIR}" "haproxy.conf.XXXX")
-  local CUSTOM_HAPROXY_TEMPLATE="$HAPROXY_BUILD_CONFIG_TMP_WORK_DIR/$HAPROXY_TEMPLATE_NAME"
-
-  if [[ -f "$CUSTOM_HAPROXY_TEMPLATE" ]]; then
-    dokku_log_info1 'Overriding default haproxy.conf with detected haproxy.conf.sigil'
-    local HAPROXY_TEMPLATE="$CUSTOM_HAPROXY_TEMPLATE"
-  fi
-  local SIGIL_PARAMS=(-f "$HAPROXY_TEMPLATE" APP="$APP" DOKKU_ROOT="$DOKKU_ROOT"
-    DOKKU_APP_LISTENERS="$DOKKU_APP_LISTENERS"
-    PROXY_PORT_MAP="$PROXY_PORT_MAP")
-
-  dokku_log_info1 "Creating HAProxy configuration"
-  sigil "${SIGIL_PARAMS[@]}" | cat -s >"$HAPROXY_CONF"
-  mv "$HAPROXY_CONF" "$DOKKU_ROOT/$APP/haproxy.conf"
 }
