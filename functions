@@ -96,7 +96,7 @@ network_compute_ports_for_dockerfile() {
           for RAW_TCP_PORT in $RAW_TCP_PORTS; do
               local AVAILABLE_TCP_PORT=$(get_permitted_port)
               dokku_log_warn "--->LINKING $AVAILABLE_TCP_PORT to $RAW_TCP_PORT"
-              NEW_PROXY_PORT_MAP+="$AVAILABLE_TCP_PORT:$RAW_TCP_PORT/tcp "
+              NEW_PROXY_PORT_MAP+="-p $AVAILABLE_TCP_PORT:$RAW_TCP_PORT/tcp "
           done          
       fi
   else
