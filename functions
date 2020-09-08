@@ -71,3 +71,37 @@ add_tcp_ports_from_dockerfile() {
       dokku_log_warn "--->Linking unavailable for non-web"
   fi
 }
+
+network_compute_ports_for_dockerfile() {
+  declare desc="return port pairs"
+  local trigger="network_compute_ports"
+  local APP="$1" PROC_TYPE="$2"
+
+  # 1. Get all exposed ports in the web proc type
+  # 2. For each exposed port, get a raw port
+  # 3. For each pair (raw port, exposed), generate a -p <raw>:<exposed>/tcp to add to the port map
+  # 4. Set the port map
+  local NEW_PROXY_PORT_MAP  
+  if [[ "web" == "$PROC_TYPE" ]] ; then
+      local RAW_TCP_PORTS="$(get_app_raw_tcp_ports "$APP")"
+
+      local DOKKU_APP_LISTENERS="$(plugn trigger network-get-listeners "$APP" "$PROC_TYPE" | xargs)"
+      
+      # wipe it
+      dokku_log_warn "LISTENERS: $DOKKU_APP_LISTENERS"
+      dokku_log_warn "RAW PORTS: $RAW_TCP_PORTS"
+      
+      if [[ -n "$RAW_TCP_PORTS" ]]; then
+          local RAW_TCP_PORT
+          for RAW_TCP_PORT in $RAW_TCP_PORTS; do
+              local AVAILABLE_TCP_PORT=$(get_permitted_port)
+              dokku_log_warn "--->LINKING $AVAILABLE_TCP_PORT to $RAW_TCP_PORT"
+              NEW_PROXY_PORT_MAP+="$AVAILABLE_TCP_PORT:$RAW_TCP_PORT/tcp "
+          done          
+      fi
+  else
+      # TODO: handle non-web
+      dokku_log_warn "--->Linking unavailable for non-web"
+  fi
+  echo $NEW_PROXY_PORT_MAP
+}
