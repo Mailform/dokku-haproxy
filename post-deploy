@@ -12,9 +12,6 @@ haproxy_post_deploy() {
 
   if [[ "$(plugn trigger proxy-type "$APP")" == "haproxy" ]]; then
       haproxy_configure_post_deploy "$APP"
-  else
-    # TODO: remove tcp ports from dockerfile
-    dokku_log_warn "HAPROXY REMOVE UNIMPLEMENTED"
   fi
 }
 

@@ -93,7 +93,7 @@ haproxy_retrieve_container_port() {
   if [[ "web" == "$PROC_TYPE" ]] ; then
       CONTAINER_PORT=$(config_get "$APP" "$CONFIG_KEY")
   fi
-  dokku_log_info1 "Return [$CONTAINER_PORT]"
   echo $CONTAINER_PORT
+  return 0
 }
 

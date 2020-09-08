@@ -12,9 +12,6 @@ haproxy_network_write_ipaddr() {
 
   if [[ "$(plugn trigger proxy-type "$APP")" == "haproxy" ]]; then
       haproxy_configure_container_ipaddr "$APP" "$PROC_TYPE" "$CINDEX" "$IPADDR"
-  else
-    # TODO: remove tcp ports from dockerfile
-    dokku_log_warn "HAPROXY REMOVE UNIMPLEMENTED"
   fi
 }
 
