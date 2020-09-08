@@ -8,14 +8,16 @@ source "$PLUGIN_AVAILABLE_PATH/proxy/functions"
 haproxy_post_deploy() {
   declare desc="update haproxy to proxy app containers"
   local trigger="haproxy_post_deploy"
-  local APP="$1" ACTION="$2"
+  local APP="$1" ACTION="$2" PROC="$3"
 
-  if [[ "$(get_app_proxy_type "$APP")" == "haproxy" ]]; then
+  if [[ "$(plugn trigger proxy-type "$APP")" == "haproxy" ]]; then
     add_tcp_ports_from_dockerfile "$APP"
   else
       # TODO: remove tcp ports from dockerfile
       dokku_log_warn "REMOVE UNIMPLEMENTED"
   fi
 }
+
+dokku_log_warn "$@"
 
 haproxy_post_deploy "$@"

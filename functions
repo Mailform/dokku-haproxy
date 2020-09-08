@@ -9,16 +9,15 @@ add_tcp_ports_from_dockerfile() {
   declare desc="build haproxy config to proxy app containers"
   local trigger="haproxy_pre_release_dockerfile"
   local APP="$1"
-
+  local
   local passed_phases=(deploy)
   
   local RAW_TCP_PORTS="$(get_app_raw_tcp_ports "$APP")"
-  local PROXY_PORT_MAP="$(get_app_proxy_port_map "$APP")"
   local PASSED=$(display_passed_phases_options $passed_phases)
   
   local DOKKU_APP_LISTENERS="$(plugn trigger network-get-listeners "$APP" | xargs)"
-  local PROXY_PORT_MAP2=$(config_get "$APP" DOKKU_PROXY_PORT_MAP)
-  local PROXY_PORT_MAP3=$(echo "$PROXY_PORT_MAP" | xargs) # trailing spaces mess up default template
+  local PROXY_PORT_MAP=$(config_get "$APP" DOKKU_PROXY_PORT_MAP)
+  local PROXY_PORT_MAP=$(echo "$PROXY_PORT_MAP" | xargs) # trailing spaces mess up default template
   
   dokku_log_warn "RAW PORTS: $RAW_TCP_PORTS"
   dokku_log_warn "PORT MAP 1: $PROXY_PORT_MAP"
