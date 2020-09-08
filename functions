@@ -58,7 +58,7 @@ haproxy_configure_container_port_mappings() {
 
               DOKKU_QUIET_OUTPUT=1 config_set --no-restart "$APP" "DOKKU_WEB_CONTAINER_PORT_$CONTAINER_INDEX"="$RAW_TCP_PORT"
               
-              dokku_log_info1 "Container #${CONTAINER_INDEX}: linking $AVAILABLE_TCP_PORT to $RAW_TCP_PORT"
+              dokku_log_warn "Container #${CONTAINER_INDEX}: linking $AVAILABLE_TCP_PORT to $RAW_TCP_PORT"
               # DOKKU_QUIET_OUTPUT=1 config_set --no-restart "$APP" "DOKKU_WEB_CONTAINER_PORT_$CONTAINER_INDEX"="$AVAILABLE_TCP_PORT"
           done          
       fi
