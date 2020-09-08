@@ -22,22 +22,22 @@ haproxy_configure_container_port_mappings() {
   declare desc="return port pairs"
   local APP="$1" PROC_TYPE="$2" CONTAINER_INDEX="$3"
 
-  # 1. Get all exposed ports in the web proc type
-  # 2. For each exposed port, get a raw port
-  # 3. For each pair (raw port, exposed), generate a -p <raw>:<exposed>/tcp to add to the port map
-  # 4. Set the port map
-  local HAPROXY_CONFIG_PATH="$DOKKU_ROOT/$APP/HAPROXY_RUNTIME_CONFIG"
-  if [[ "$CONTAINER_INDEX" == "1" ]] ; then
-      echo "# HAPROXY Runtime Configuration" > "$HAPROXY_CONFIG_PATH"
-      dokku_log_warn "HAPROXY CONFIG SETUP"
-  fi
-
-  dokku_log_warn "HAPROXY Configuration Path: [$HAPROXY_CONFIG_PATH] [$DOKKU_ROOT] [$APP]"
-  
-  local LOCAL_IP="$(hostname --ip-address)"
-  
-  local NEW_PROXY_PORT_MAP
   if [[ "web" == "$PROC_TYPE" ]] ; then
+      # 1. Get all exposed ports in the web proc type
+      # 2. For each exposed port, get a raw port
+      # 3. For each pair (raw port, exposed), generate a -p <raw>:<exposed>/tcp to add to the port map
+      # 4. Set the port map
+      local HAPROXY_CONFIG_PATH="$DOKKU_ROOT/$APP/HAPROXY_RUNTIME_CONFIG"
+      if [[ "$CONTAINER_INDEX" == "1" ]] ; then
+          echo "# HAPROXY Runtime Configuration" > "$HAPROXY_CONFIG_PATH"
+      fi
+      
+      dokku_log_warn "HAPROXY Configuration Path: [$HAPROXY_CONFIG_PATH] [$DOKKU_ROOT] [$APP]"
+      
+      local LOCAL_IP="$(hostname --ip-address)"
+      
+      local NEW_PROXY_PORT_MAP
+      
       local RAW_TCP_PORTS="$(get_app_raw_tcp_ports "$APP")"
 
       local DOKKU_APP_LISTENERS="$(plugn trigger network-get-listeners "$APP" "$PROC_TYPE" | xargs)"
@@ -56,17 +56,14 @@ haproxy_configure_container_port_mappings() {
               echo "set server ${APP}-backend/${APP}-server-${CONTAINER_INDEX} addr ${LOCAL_IP} port ${AVAILABLE_TCP_PORT}" >>"$HAPROXY_CONFIG_PATH"
               echo "set server ${APP}-backend/${APP}-server-${CONTAINER_INDEX} state ready" >>"$HAPROXY_CONFIG_PATH"
 
-              dokku_log_warn "set server ${APP}-backend/${APP}-server-${CONTAINER_INDEX} addr ${LOCAL_IP} port ${AVAILABLE_TCP_PORT} to $HAPROXY_CONFIG_PATH"
-              dokku_log_warn "set server ${APP}-backend/${APP}-server-${CONTAINER_INDEX} state ready to $HAPROXY_CONFIG_PATH"
-
               DOKKU_QUIET_OUTPUT=1 config_set --no-restart "$APP" "DOKKU_WEB_CONTAINER_PORT_$CONTAINER_INDEX"="$RAW_TCP_PORT"
               
               dokku_log_warn "Container #${CONTAINER_INDEX}: linking $AVAILABLE_TCP_PORT to $RAW_TCP_PORT"
               # DOKKU_QUIET_OUTPUT=1 config_set --no-restart "$APP" "DOKKU_WEB_CONTAINER_PORT_$CONTAINER_INDEX"="$AVAILABLE_TCP_PORT"
           done          
       fi
+      echo $NEW_PROXY_PORT_MAP
   fi
-  echo $NEW_PROXY_PORT_MAP
 }
 
 haproxy_configure_container_ipaddr() {
