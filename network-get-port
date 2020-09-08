@@ -9,7 +9,6 @@ haproxy_network_get_port() {
   declare desc="retrieve the port for a specific container after start"
   local trigger="network-get-port"
   local APP="$1" PROC_TYPE="$2" CINDEX="$5" HEROKUISH="$4" CID="$3"
-  local TRIGGERTYPE="$(plugn trigger proxy-type "$APP")"
 
   if [[ "$(plugn trigger proxy-type "$APP")" == "haproxy" ]]; then
       haproxy_retrieve_container_port "$APP" "$PROC_TYPE" "$CINDEX" "$HEROKUISH"

@@ -88,14 +88,10 @@ haproxy_retrieve_container_port() {
   local CONTAINER_PORT="80"
   local CONFIG_KEY="DOKKU_WEB_CONTAINER_PORT_$CONTAINER_INDEX"
 
-  dokku_log_warn "X1 $CONFIG_KEY"
   if [[ "web" == "$PROC_TYPE" ]] ; then
-      dokku_log_warn "X2"
       CONTAINER_PORT=$(config_get "$APP" "$CONFIG_KEY")
-      dokku_log_warn "X3"
   fi
   
-  dokku_log_info1 "Container #$CONTAINER_INDEX is using Port $CONTAINER_PORT"
   echo $CONTAINER_PORT
 }
 
