@@ -6,13 +6,12 @@ source "$PLUGIN_AVAILABLE_PATH/haproxy/functions"
 source "$PLUGIN_AVAILABLE_PATH/proxy/functions"
 
 haproxy_proxy_disable() {
-  declare desc="build haproxy config to proxy app containers from command line"
+  declare desc="build haproxy config to proxy app containers"
   local trigger="haproxy_proxy_disable"
   local APP="$1" ACTION="$2"
 
   if [[ "$(get_app_proxy_type "$APP")" == "haproxy" ]]; then
-    haproxy_delete_config "$APP"
-    haproxy_reload
+    # TODO: remove tcp ports from dockerfile 
   fi
 }
 

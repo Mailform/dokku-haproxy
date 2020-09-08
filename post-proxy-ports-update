@@ -6,19 +6,14 @@ source "$PLUGIN_AVAILABLE_PATH/haproxy/functions"
 source "$PLUGIN_AVAILABLE_PATH/proxy/functions"
 
 haproxy_post_proxy_ports_update() {
-  declare desc="build haproxy config to proxy app containers from command line"
+  declare desc="update haproxy config to proxy app containers"
   local trigger="haproxy_post_proxy_ports_update"
   local APP="$1" ACTION="$2"
   
   if [[ "$(get_app_proxy_type "$APP")" == "haproxy" ]]; then
     add_tcp_ports_from_dockerfile "$APP"
-    haproxy_build_config "$APP"
-    haproxy_reload
   else
-    if [[ -f "$DOKKU_ROOT/$APP/haproxy.conf" ]]; then
-      rm "$DOKKU_ROOT/$APP/haproxy.conf"
-      haproxy_reload
-    fi
+    # TODO: remove tcp ports from dockerfile
   fi
 }
 
