@@ -75,11 +75,10 @@ haproxy_configure_post_deploy() {
   local APP="$1"
 
   local HAPROXY_CONFIG_PATH="$DOKKU_ROOT/$APP/HAPROXY_RUNTIME_CONFIG"
-  echo "show servers state" > "$HAPROXY_CONFIG_PATH"
   local HAPROXY_CONFIG_CONTENT="$(cat $HAPROXY_CONFIG_PATH)"
   local HAPROXY_ADMIN_URL=$(config_get "$APP" DOKKU_HAPROXY_ADMIN_URL)
 
-  dokku_log_warn "POST DEPLOY: $HAPROXY_ADMIN_URL $HAPROXY_CONFIG_CONTENT"
-  # curl -v -X POST 10.128.0.40:10000/control/v1/app/update -H "Content-Type: application/x-www-form-urlencoded" -d "APP=v1-web" -d "contents=$(cat nc)"
+  dokku_log_info1 "Updating application routing"
+  curl -X POST "$HAPROXY_ADMIN_URL" -H "Content-Type: application/x-www-form-urlencoded" -d "APP=$APP" -d "CONFIG=$HAPROXY_CONFIG_CONTENT"
 }
 
