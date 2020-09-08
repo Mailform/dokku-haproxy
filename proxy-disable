@@ -16,4 +16,6 @@ haproxy_proxy_disable() {
   fi
 }
 
+dokku_log_warn "INFO3----->: $@"
+
 haproxy_proxy_disable "$@"

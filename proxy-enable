@@ -15,4 +15,6 @@ haproxy_proxy_enable() {
   fi
 }
 
+dokku_log_warn "INFO2----->: $@"
+
 haproxy_proxy_enable "$@"

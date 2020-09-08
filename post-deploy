@@ -18,6 +18,6 @@ haproxy_post_deploy() {
   fi
 }
 
-dokku_log_warn "$@"
+dokku_log_warn "INFO----->: $@"
 
 haproxy_post_deploy "$@"
