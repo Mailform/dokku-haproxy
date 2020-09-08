@@ -5,17 +5,17 @@ set -eo pipefail
 source "$PLUGIN_AVAILABLE_PATH/haproxy/functions"
 source "$PLUGIN_AVAILABLE_PATH/proxy/functions"
 
-haproxy_docker_args_process_deploy() {
-  declare desc="update port map after docker container build"
-  local trigger="haproxy_pre_deploy"
-  local APP="$1" PROC_TYPE="$4" CINDEX="$5"
+haproxy_network_write_ipaddr() {
+  declare desc="update IP address after docker container start"
+  local trigger="haproxy_network_write_ipaddr"
+  local APP="$1" PROC_TYPE="$2" CINDEX="$3" IPADDR="$4"
 
   if [[ "$(plugn trigger proxy-type "$APP")" == "haproxy" ]]; then
-      haproxy_configure_container_port_mappings "$APP" "$PROC_TYPE" "$CINDEX"
+      haproxy_configure_container_ipaddr "$APP" "$PROC_TYPE" "$CINDEX" "$IPADDR"
   else
     # TODO: remove tcp ports from dockerfile
     dokku_log_warn "HAPROXY REMOVE UNIMPLEMENTED"
   fi
 }
 
-haproxy_docker_args_process_deploy "$@"
+haproxy_network_write_ipaddr "$@"

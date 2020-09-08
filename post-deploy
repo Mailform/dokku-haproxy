@@ -5,17 +5,17 @@ set -eo pipefail
 source "$PLUGIN_AVAILABLE_PATH/haproxy/functions"
 source "$PLUGIN_AVAILABLE_PATH/proxy/functions"
 
-haproxy_proxy_build_config() {
-  declare desc="rebuild haproxy config to proxy app containers"
-  local trigger="haproxy_proxy_build_config"
-  local APP="$1" ACTION="$2"
+haproxy_post_deploy() {
+  declare desc="update HAPROXY after all docker containers are started"
+  local trigger="haproxy_post_deploy"
+  local APP="$1" 
 
   if [[ "$(plugn trigger proxy-type "$APP")" == "haproxy" ]]; then
-    add_tcp_ports_from_dockerfile "$APP"
+      haproxy_configure_post_deploy "$APP"
   else
     # TODO: remove tcp ports from dockerfile
-    dokku_log_warn "REMOVE UNIMPLEMENTED"
+    dokku_log_warn "HAPROXY REMOVE UNIMPLEMENTED"
   fi
 }
 
-haproxy_proxy_build_config "$@"
+haproxy_post_deploy "$@"
