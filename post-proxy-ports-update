@@ -13,7 +13,8 @@ haproxy_post_proxy_ports_update() {
   if [[ "$(get_app_proxy_type "$APP")" == "haproxy" ]]; then
     add_tcp_ports_from_dockerfile "$APP"
   else
-    # TODO: remove tcp ports from dockerfile
+      # TODO: remove tcp ports from dockerfile
+      dokku_log_warn "REMOVE UNIMPLEMENTED"      
   fi
 }
 

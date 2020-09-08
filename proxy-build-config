@@ -14,6 +14,7 @@ haproxy_proxy_build_config() {
     add_tcp_ports_from_dockerfile "$APP"
   else
     # TODO: remove tcp ports from dockerfile
+    dokku_log_warn "REMOVE UNIMPLEMENTED"
   fi
 }
 

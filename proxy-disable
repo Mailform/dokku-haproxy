@@ -11,7 +11,8 @@ haproxy_proxy_disable() {
   local APP="$1" ACTION="$2"
 
   if [[ "$(get_app_proxy_type "$APP")" == "haproxy" ]]; then
-    # TODO: remove tcp ports from dockerfile 
+      # TODO: remove tcp ports from dockerfile
+      dokku_log_warn "REMOVE UNIMPLEMENTED"      
   fi
 }
 
