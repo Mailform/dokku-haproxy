@@ -73,18 +73,19 @@ haproxy_retrieve_container_port() {
   declare desc="retrieve port for a specific container"
   local trigger="network-get-port"
   local APP="$1" PROC_TYPE="$2" CONTAINER_INDEX="$3"
-  local RAW_TCP_PORT=""
+  local CONTAINER_PORT=""
   if [[ "web" == "$PROC_TYPE" ]] ; then
       local RAW_TCP_PORTS="$(get_app_raw_tcp_ports "$APP")"
       
       if [[ -n "$RAW_TCP_PORTS" ]]; then
+          local RAW_TCP_PORT
           for RAW_TCP_PORT in $RAW_TCP_PORTS; do
-              
+              CONTAINER_PORT=$RAW_TCP_PORT
           done          
       fi
   fi
 
-  echo $RAW_TCP_PORT
+  echo $CONTAINER_PORT
 }
 
 haproxy_configure_post_deploy() {
