@@ -31,7 +31,7 @@ haproxy_configure_container_port_mappings() {
       echo "# HAPROXY Runtime Configuration" > "$HAPROXY_CONFIG_PATH"
   fi
 
-  dokku_log_warn "HAPROXY Configuration Path: $HAPROXY_RUNTIME_CONFIG"
+  dokku_log_warn "HAPROXY Configuration Path: [$HAPROXY_RUNTIME_CONFIG] [$DOKKU_ROOT] [$APP]"
   
   local LOCAL_IP="$(hostname --ip-address)"
   
