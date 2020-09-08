@@ -8,43 +8,35 @@ source "$PLUGIN_CORE_AVAILABLE_PATH/docker-options/functions"
 add_tcp_ports_from_dockerfile() {
   declare desc="build haproxy config to proxy app containers"
   local trigger="haproxy_pre_release_dockerfile"
-  local APP="$1"
-  local
-  local passed_phases=(deploy)
-  
-  local RAW_TCP_PORTS="$(get_app_raw_tcp_ports "$APP")"
-  local PASSED=$(display_passed_phases_options $passed_phases)
-  
-  local DOKKU_APP_LISTENERS="$(plugn trigger network-get-listeners "$APP" | xargs)"
-  local PROXY_PORT_MAP=$(config_get "$APP" DOKKU_PROXY_PORT_MAP)
-  local PROXY_PORT_MAP=$(echo "$PROXY_PORT_MAP" | xargs) # trailing spaces mess up default template
-  
-  dokku_log_warn "RAW PORTS: $RAW_TCP_PORTS"
-  dokku_log_warn "PORT MAP 1: $PROXY_PORT_MAP"
-  dokku_log_warn "PORT MAP 2: $PROXY_PORT_MAP2"
-  dokku_log_warn "PORT MAP 3: $PROXY_PORT_MAP3"
-  dokku_log_warn "LISTENERS: $DOKKU_APP_LISTENERS"
-  dokku_log_warn "PASSED: $PASSED"
+  local APP="$1" PROC_TYPE="$2"
+
+  # 1. Get all exposed ports in the web proc type
+  # 2. For each exposed port, get a raw port
+  # 3. For each pair (raw port, exposed), generate a -p <raw>:<exposed>/tcp to add to the port map
+  # 4. Set the port map
+  local passed_phases=(deploy)  
+  if [[ "web" == "$PROC_TYPE" ]] ; then
+      local RAW_TCP_PORTS="$(get_app_raw_tcp_ports "$APP")"
       
-  if [[ -n "$RAW_TCP_PORTS" ]]; then
-    local RAW_TCP_PORT
-    for RAW_TCP_PORT in $RAW_TCP_PORTS; do
-      local ADD_TO_PROXY_PORTS=true
-      for PORT_MAP in $PROXY_PORT_MAP; do
-        local APP_PORT="$(cut -d ':' -f3 <<<"$PORT_MAP")"
-        if [[ "$APP_PORT" == "$RAW_TCP_PORT" ]]; then
-          local ADD_TO_PROXY_PORTS=false
-        fi
-      done
+      if [[ -n "$RAW_TCP_PORTS" ]]; then
+          local RAW_TCP_PORT
 
-      dokku_log_warn "ADD_TO_PROXY_PORTS: $ADD_TO_PROXY_PORTS"
-      if [ "$ADD_TO_PROXY_PORTS" = true ]; then
-        dokku_log_info1 "Adding port $RAW_TCP_PORT based on EXPOSED in Dockerfile"
-        local AVAILABLE_TCP_PORT=$(get_available_port)
+          local PROXY_PORT_MAP=$(config_get "$APP" DOKKU_PROXY_PORT_MAP)
+          local PROXY_PORT_MAP=$(echo "$PROXY_PORT_MAP" | xargs) # trailing spaces mess up default template
 
-        dokku_log_warn "--->LINKING $AVAILABLE_TCP_PORT to $RAW_TCP_PORT"
-        add_passed_docker_option passed_phases[@] "-p $AVAILABLE_TCP_PORT:$RAW_TCP_PORT/tcp"
+          local DOKKU_APP_LISTENERS="$(plugn trigger network-get-listeners "$APP" "$PROC_TYPE" | xargs)"
+
+          # wipe it
+          dokku_log_warn "LISTENERS: $DOKKU_APP_LISTENERS"
+          
+          dokku_log_info1 "Adding port $RAW_TCP_PORT based on EXPOSED in Dockerfile"
+          local AVAILABLE_TCP_PORT=$(get_available_port)
+          
+          dokku_log_warn "--->LINKING $AVAILABLE_TCP_PORT to $RAW_TCP_PORT"
+          #add_passed_docker_option passed_phases[@] "-p $AVAILABLE_TCP_PORT:$RAW_TCP_PORT/tcp"
       fi
-    done
+  else
+      # TODO: handle non-web
+      dokku_log_warn "--->Linking unavailable for non-web"
   fi
 }
